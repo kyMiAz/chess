@@ -45,6 +45,7 @@ app.get('/move/:x/:move',(req, res) => {
                              else p = i.toString();
                              if(chess.has(p)){
                                  res.status(500).send();
+                                 chess.clear();
                                  return;
                              }
                          }
@@ -52,18 +53,17 @@ app.get('/move/:x/:move',(req, res) => {
                     }
                     //左右
                     else{
-                         console.log("min:"+min);
-                         console.log("max:"+max);
                          for(i = min+10;i < max; i+=10){
                              if(chess.has(i.toString())){
                                 res.status(500).send();
+                                chess.clear();
                                  return;
                              }
                          }
                          hasChess(pos1,pos2,x,y,x2,y2,move,res);
                     }
                  }
-                 else {res.status(500).send(); return;}
+                 else {res.status(500).send();chess.clear(); return;}
                  break;
              case "马":
                  x1 = parseInt(x1);
@@ -77,6 +77,7 @@ app.get('/move/:x/:move',(req, res) => {
                      if(y1 - y2 == 2){
                          if(chess.has((x1.toString()+(y1-1).toString()))){
                             res.status(500).send();
+                            chess.clear();
                              return;                           
                          }
                          hasChess(pos1,pos2,x,y,x2.toString(),y2.toString(),move,res);
@@ -85,6 +86,7 @@ app.get('/move/:x/:move',(req, res) => {
                      else if(y2 - y1 == 2){
                          if(chess.has((x1.toString()+(y1+1).toString()))){
                             res.status(500).send();
+                            chess.clear();
                              return;                           
                          }
                          hasChess(pos1,pos2,x,y,x2.toString(),y2.toString(),move,res);
@@ -93,6 +95,7 @@ app.get('/move/:x/:move',(req, res) => {
                      else if(x1 - x2 == 2){
                          if(chess.has(((x1-1).toString()+y1.toString()))){
                             res.status(500).send();
+                            chess.clear();
                              return;                           
                          }
                          hasChess(pos1,pos2,x,y,x2.toString(),y2.toString(),move,res);
@@ -101,12 +104,13 @@ app.get('/move/:x/:move',(req, res) => {
                      else if(x2 - x1 == 2){
                          if(chess.has(((x1+1).toString()+y1.toString()))){
                             res.status(500).send();
+                            chess.clear();
                              return;                           
                          }
                          hasChess(pos1,pos2,x,y,x2.toString(),y2.toString(),move,res);
                      }
                  }
-                 else {res.status(500).send(); return;}
+                 else {res.status(500).send();chess.clear(); return;}
                  break;
              case "相":
                  //是否按照田字行走
@@ -115,37 +119,38 @@ app.get('/move/:x/:move',(req, res) => {
                      let halfY = (parseInt(y1) + parseInt(y2)) / 2;
                      if(chess.has(halfX.toString()+halfY.toString())){
                         res.status(500).send();
+                        chess.clear();
                          return;
                      }
                      if(name.substr(0,1)=="红"){
-                         if(parseInt(y2)<5){res.status(500).send(); return;}
+                         if(parseInt(y2)<5){res.status(500).send(); chess.clear();return;}
                      }
                      else{
-                         if(parseInt(y2)>5){res.status(500).send(); return;}
+                         if(parseInt(y2)>5){res.status(500).send(); chess.clear();return;}
                      }
                      hasChess(pos1,pos2,x,y,x2,y2,move,res);
                  }
-                 else{res.status(500).send(); return;}
+                 else{res.status(500).send(); chess.clear();return;}
                  break;
              case "士":
                  if(Math.abs(x1 - x2) == 1 && Math.abs(y1 - y2) == 1){
                      let shi;
                      if(name.substr(0,1)=="红"){
                          shi = ["37","39","48","57","59"];
-                         if(shi.indexOf(pos2) == -1){res.status(500).send(); return;}
+                         if(shi.indexOf(pos2) == -1){res.status(500).send();chess.clear(); return;}
                      }
                      else{
                          shi = ["30","32","41","50","52"];
-                         if(shi.indexOf(pos2) == -1){res.status(500).send(); return;}
+                         if(shi.indexOf(pos2) == -1){res.status(500).send(); chess.clear();return;}
                      }
                      hasChess(pos1,pos2,x,y,x2,y2,move,res);
                  }
-                 else{res.status(500).send(); return;}
+                 else{res.status(500).send(); chess.clear();return;}
                  break;
              case "帅":
                  if((Math.abs(x1 - x2) == 1 && y1 == y2)
                  || (Math.abs(y1 - y2) == 1 && x1 == x2)){
-                     if(x2 < 3 || x2 > 5 || y2 < 7){res.status(500).send(); return;}
+                     if(x2 < 3 || x2 > 5 || y2 < 7){res.status(500).send(); chess.clear();return;}
                      hasChess(pos1,pos2,x,y,x2,y2,move,res);
                  }
                  else{
@@ -158,21 +163,23 @@ app.get('/move/:x/:move',(req, res) => {
                              else p = i.toString();
                              if(chess.has(p)){
                                 res.status(500).send();
+                                chess.clear();
                                  return;
                              }
                          }
                          x = modifyPos(x,x2+y2+"99");
                          y = modifyPos(x,move);
                          res.send(y);
+                         chess.clear();
                          return;
                      }
-                     else{res.status(500).send(); return;}
+                     else{res.status(500).send();chess.clear(); return;}
                  }
                  break;
              case "将":
                  if((Math.abs(x1 - x2) == 1 && y1 == y2)
                  || (Math.abs(y1 - y2) == 1 && x1 == x2)){
-                     if(x2 < 3 || x2 > 5 || y2 > 2){res.status(500).send(); return;}
+                     if(x2 < 3 || x2 > 5 || y2 > 2){res.status(500).send();chess.clear(); return;}
                      hasChess(pos1,pos2,x,y,x2,y2,move,res);
                  }
                  else{
@@ -185,18 +192,19 @@ app.get('/move/:x/:move',(req, res) => {
                              else p = i.toString();
                              if(chess.has(p)){
                                 res.status(500).send();
+                                chess.clear();
                                  return;
                              }
                          }
                          x = modifyPos(x,x2+y2+"99");
                          y = modifyPos(x,move);
                          res.json(y);
+                         chess.clear();
                          return;
                      }
-                     else{res.status(500).send(); return;}
+                     else{res.status(500).send();chess.clear(); return;}
                  }
                  break;
-             //感觉有点问题
              case "兵":
                  if((Math.abs(x1 - x2) == 1 && y1 == y2)
                  || (Math.abs(y1 - y2) == 1 && x1 == x2)){
@@ -206,30 +214,32 @@ app.get('/move/:x/:move',(req, res) => {
                          return;
                         }
                         res.status(500).send();
+                        chess.clear();
                      }
                      else{
-                         if(y2 >=5 ){res.status(500).send(); return;}
+                         if(y2 >=5 ){res.status(500).send(); chess.clear();return;}
                          hasChess(pos1,pos2,x,y,x2,y2,move,res);
                      }
                  }
-                 else{res.status(500).send(); return;}
+                 else{res.status(500).send();chess.clear(); return;}
                  break;
              case "卒":
                  if((Math.abs(x1 - x2) == 1 && y1 == y2)
                  || (Math.abs(y1 - y2) == 1 && x1 == x2)){
-                     if(y1 <= 5){
+                     if(y1 < 5){
                         if(x1==x2 && y2>y1){
                          hasChess(pos1,pos2,x,y,x2,y2,move,res);
                          return;
                         }
                         res.status(500).send();
+                        chess.clear();
                      }
                      else{
-                         if(y2 <=5 ){res.status(500).send(); return;}
+                         if(y2 <5 ){res.status(500).send();chess.clear(); return;}
                          hasChess(pos1,pos2,x,y,x2,y2,move,res);
                      }
                  }
-                 else{res.status(500).send(); return;}
+                 else{res.status(500).send(); chess.clear();return;}
                  break;
              case "炮":
                  //是否直线
@@ -249,32 +259,38 @@ app.get('/move/:x/:move',(req, res) => {
                                      else k = j.toString();
                                      if(chess.has(k)){
                                         res.status(500).send();
+                                        chess.clear();
                                          return;
                                      }
                                  }
                                  if(chess.has(pos2)){
                                      if(chess.get(pos2).substr(0,1) == chess.get(pos1).substr(0,1)){
                                         res.status(500).send();
+                                        chess.clear();
                                          return;
                                      }
                                      else{
                                          x = modifyPos(x,x2+y2+"99");
                                          y = modifyPos(x,move);
                                          res.json(y);
+                                         chess.clear();
                                          return;
                                      }
                                  }
                                  res.status(500).send();
+                                 chess.clear();
                                  return;
                              }
                          }
                          if(chess.has(pos2)){
                             res.status(500).send();
+                            chess.clear();
                              return;
                          }
                          else{
                              y = modifyPos(x,move);
                              res.json(y);
+                             chess.clear();
                              return;
                          }             
                     }
@@ -285,41 +301,47 @@ app.get('/move/:x/:move',(req, res) => {
                                  for(j = i+10;j < max; j+=10){
                                      if(chess.has(j.toString())){
                                         res.status(500).send();
+                                        chess.clear();
                                          return;
                                      }
                                  }
                                  if(chess.has(pos2)){
                                      if(chess.get(pos2).substr(0,1) == chess.get(pos1).substr(0,1)){
                                         res.status(500).send();
+                                        chess.clear();
                                          return;
                                      }
                                      else{
                                          x = modifyPos(x,x2+y2+"99");
                                          y = modifyPos(x,move);
                                          res.json(y);
+                                         chess.clear();
                                          return;
                                      }
                                  }
                                  res.status(500).send();
+                                 chess.clear();
                                  return;
                              }
                          }
                          if(chess.has(pos2)){
                             res.status(500).send();
+                            chess.clear();
                              return;
                          }
                          else{
                              y = modifyPos(x,move);
                              res.json(y);
+                             chess.clear();
                              return;
                          }  
                     }
                  }
-                 else {res.status(500).send(); return;}
+                 else {res.status(500).send();chess.clear(); return;}
                  break;
          }
      }
-     else{res.status(500).send();}
+     else{res.status(500).send();chess.clear();}
 })
 
 /*
@@ -357,18 +379,21 @@ function hasChess(pos1,pos2,x,y,x2,y2,move,res){
     if(chess.has(pos2)){
         if(chess.get(pos2).substr(0,1) == chess.get(pos1).substr(0,1)){
             res.status(500).send();
+            chess.clear();
             return;
         }
         else{
             x = modifyPos(x,x2+y2+"99");
             y = modifyPos(x,move);
             res.json(y);
+            chess.clear();
             return;
         }
     }
     else{
         y = modifyPos(x,move);
         res.json(y);
+        chess.clear();
         return;
     }
 }
