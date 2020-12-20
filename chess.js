@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
+const fs = require('fs');
+
 //参数
+let rawdata = fs.readFileSync('final_result.json');
+let suggest = JSON.parse(rawdata);
 let chess = new Map();;
 let chessName = ["红车","红马","红相","红士","红帅","红士","红相","红马",
                 "红车","红炮","红炮","红兵","红兵","红兵","红兵","红兵",
@@ -10,7 +14,14 @@ let chessName = ["红车","红马","红相","红士","红帅","红士","红相",
 //机器走棋
 app.get('/suggest/:x',(req, res) => {
     let x = req.params.x;
-    res.json("8979695949392919097717866646260600102030405060708012720323436383");
+    for(i =0;i<suggest.length;i++){
+        if(x == suggest[i].init){
+            let y = modifyPos(suggest[i].init,suggest[i].move);
+            res.json(y).status(200);
+            return;
+        }
+    }
+    res.status(500).send();
 })
 
 //人类走棋
@@ -218,6 +229,7 @@ app.get('/move/:x/:move',(req, res) => {
                      }
                      else{
                          if(y2 >=5 ){res.status(500).send(); chess.clear();return;}
+                         if(y2 > y1 ){res.status(500).send(); chess.clear();return;}
                          hasChess(pos1,pos2,x,y,x2,y2,move,res);
                      }
                  }
@@ -236,6 +248,7 @@ app.get('/move/:x/:move',(req, res) => {
                      }
                      else{
                          if(y2 <5 ){res.status(500).send();chess.clear(); return;}
+                         if(y2 < y1 ){res.status(500).send(); chess.clear();return;}
                          hasChess(pos1,pos2,x,y,x2,y2,move,res);
                      }
                  }
@@ -367,8 +380,6 @@ function modifyPos(x,move){
             else{
                 y = x.slice(0,i)+move.slice(2,4)+x.substr(i+2,x.length);
             }
-            // console.log("请求前："+x);
-            //console.log("请求后："+y);
             return y;
         }
     }
@@ -385,14 +396,14 @@ function hasChess(pos1,pos2,x,y,x2,y2,move,res){
         else{
             x = modifyPos(x,x2+y2+"99");
             y = modifyPos(x,move);
-            res.json(y);
+            res.json(y).status(200);
             chess.clear();
             return;
         }
     }
     else{
         y = modifyPos(x,move);
-        res.json(y);
+        res.json(y).status(200);
         chess.clear();
         return;
     }
@@ -400,3 +411,5 @@ function hasChess(pos1,pos2,x,y,x2,y2,move,res){
 
 
 app.listen(5000,()=> console.log('启动在http://localhost:5000/') );
+
+
