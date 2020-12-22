@@ -1,15 +1,85 @@
 const express = require('express');
 const app = express();
 const fs = require('fs');
+//引入数据库模块
+const {Sequelize,Model,DataTypes} = require('sequelize');
+const sequelize = new Sequelize('sqlite:chessboard.db');
+//fromdata
+const multipart = require('connect-multiparty');
+const multipartMiddleware = multipart();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+//创建一个User对象继承Model
+class Chess extends Model{}
+//初始化User对象
+Chess.init({
+    id:{
+        //int类型
+        type: DataTypes.INTEGER,
+        //主键
+        primaryKey: true,
+        //自增
+        autoIncrement: true
+    },
+    init:{
+        //int类型
+        type: DataTypes.STRING(255),
+        allowNull:false,
+    },
+    after: {
+        //类型是String类型，相当于Varchar(50)
+        type: DataTypes.STRING(255),
+        allowNull:false,
+    },
+    weight:{
+        type:DataTypes.INTEGER,
+        allowNull:false,
+        defaultValue:0
+    },
+},{sequelize,modelName: 'chess'});
+Chess.sync();
 
 //参数
-let rawdata = fs.readFileSync('final_result.json');
+let rawdata = fs.readFileSync('final_result_2.json');
 let suggest = JSON.parse(rawdata);
 let chess = new Map();;
 let chessName = ["红车","红马","红相","红士","红帅","红士","红相","红马",
                 "红车","红炮","红炮","红兵","红兵","红兵","红兵","红兵",
                 "黑车","黑马","黑相","黑士","黑将","黑士","黑相","黑马",
                 "黑车","黑炮","黑炮","黑卒","黑卒","黑卒","黑卒","黑卒"]
+
+
+//机器学习
+//机器走棋
+app.post('/memorize/',multipartMiddleware,(req, res) => {
+    let x = req.body.x;
+    let y = req.body.y;
+    Chess.findOne({where:{init:x,after:y}}).then(chess => {
+        if(chess){
+            let w = chess.weight +1 ;
+            chess.update({
+                weight:w
+            }).then(()=>{
+                res.status(200).send();
+                return;
+            })
+        }
+        else{
+            Chess.create({
+                init: x,
+                after: y,
+                weight: 1
+                }).then(()=>{
+                    go = true;
+                    res.status(200).send();
+                    return;
+                })
+        }
+        res.status(202).send();
+    })
+})
 
 //机器走棋
 app.get('/suggest/:x',(req, res) => {
@@ -21,7 +91,31 @@ app.get('/suggest/:x',(req, res) => {
             return;
         }
     }
-    res.status(500).send();
+    Chess.findAll({where: {init: x}}).then(chess =>{
+        let y;
+        if(chess.length!=0){
+            if(chess.length == 1){
+                y = chess[0].after;
+            }
+            else{
+                let max =0;
+                let index = 0;
+                for(i=0;i<chess.length;i++)
+                {
+                    if(chess[i].weight>max){
+                        max = chess[i].weight;
+                        index = chess[i].id-1; 
+                    }
+                }
+                console.log(index);
+                console.log(chess[index]);
+                y = chess[index].after;
+            }
+            res.json(y).status(200);   
+            return;
+        }
+        else{res.status(201).send();return;} 
+    })
 })
 
 //人类走棋
@@ -358,8 +452,33 @@ app.get('/move/:x/:move',(req, res) => {
 })
 
 /*
+测试函数
+*/
+//测试1个
+app.get('/testone',(req,res)=>{
+    let x = req.query.x;
+    Chess.destroy({where:{}}).then(()=>{
+        res.status(202);
+    })
+    // Chess.findOne({Where:{init:x}}).then(chess=>{
+    //     res.send(chess);
+    // })
+})
+//测试
+app.get('/test',(req,res)=>{
+    Chess.findAll().then(chess=>{
+        // console.log(chess[0].after);
+        console.log(chess.length);
+        if(chess)res.send(chess);
+        else res.status(500);
+        
+    })
+})
+
+/*
 工具函数
  */
+
 //将棋子位置与名称存入map中
 function sliceChess(x){
     for(i = 0;i < 32; i+=1){
@@ -411,5 +530,4 @@ function hasChess(pos1,pos2,x,y,x2,y2,move,res){
 
 
 app.listen(5000,()=> console.log('启动在http://localhost:5000/') );
-
 
